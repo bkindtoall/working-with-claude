@@ -1,6 +1,6 @@
 # What I've built and kept running with Claude
 
-**Patricia Filipovic** · March to October 2026 · [craftingmetrics.com](https://craftingmetrics.com) · [Interactive version](https://bkindtoall.github.io/working-with-claude/)
+**Patricia Filipovic** · March to October 2026 · [craftingmetrics.com](https://craftingmetrics.com) · [Interactive version](https://bkindtoall.github.io/working-with-claude/) · [On my portfolio site](https://craftingmetrics.com/working-with-claude/)
 
 Since March 2026 I've been building personal systems with Claude that run my job search, my mornings and my email. I've become quite comfortable working with AI and maintaining the agents and automations I build, mostly with Claude (Chat, Code, and Cowork) and ChatGPT (Chat and Codex), including connecting them through APIs to other software like Notion.
 
@@ -134,6 +134,7 @@ Each of these started as a specific problem. They're now the rules every new aut
 - **Sep 17 · Fixed · A duplicate job that never once worked** for 9 Mondays. The drift check now inspects every scheduled job whatever its name.
 - **Sep 27 · Started · Version history and nightly backups.** Every store is a local git repository, and a nightly job exports Open Brain and commits changes. The export refuses to overwrite the backup if it comes back empty or much smaller.
 - **Oct 2 · Started · Weekly AI code review.** My rotation design has Sonnet review one changed automation a week. The first full pass found 60 issues and we fixed 10 that day. Medium effort missed a known bug and high effort ranked it first, so it runs at high.
+- **Oct 5 · Started · This logbook.** Claude pulled together everything I've built since March from my Open Brain notes, the automations registry, the git history and the folders of retired routines. I read the draft against what I remember and corrected what it got wrong, starting with the /consensus entry, which described a workflow I'd stopped using. One script now rebuilds it for GitHub and my portfolio site every time something changes.
 
 ### Household and side projects
 
