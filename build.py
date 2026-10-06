@@ -3,14 +3,18 @@
     python3 build.py
 
 docs/index.html          standalone page for GitHub Pages (Settings > Pages > main /docs)
-wordpress/embed.html     paste into an Elementor HTML widget on craftingmetrics.com.
+docs/embed.js            the logbook for craftingmetrics.com, served from GitHub Pages.
                          Renders inside a shadow root, so the site theme and the page
                          cannot restyle each other. Light mode only, to sit on the site.
+wordpress/embed.html     two-line snippet pasted ONCE into an Elementor HTML widget; it
+                         loads docs/embed.js, so a push updates the site within minutes.
 """
+import json
 import re
 from pathlib import Path
 
 HERE = Path(__file__).parent
+PAGES = "https://bkindtoall.github.io/working-with-claude/"
 src = (HERE / "index.html").read_text()
 
 title = re.search(r"<title>.*?</title>", src).group(0)
@@ -46,19 +50,24 @@ light = light.replace(":root{", ":host{").replace("body{", ":host{display:block;
 light = re.sub(r"top:env\(safe-area-inset-top,0px\)", "top:0", light)
 shadow_js = js.replace("document.getElementById", "root.getElementById").replace(
     "document.querySelectorAll", "root.querySelectorAll")
-wp = HERE / "wordpress"
-wp.mkdir(exist_ok=True)
-tpl = f"""{fonts}
-<div id="cm-logbook"></div>
-<template id="cm-logbook-tpl"><style>{light}</style>{body}</template>
-<script>
+# The embed script lives on GitHub Pages, so every push updates craftingmetrics.com too.
+fonts_js = "".join(
+    f'var l=document.createElement("link");l.rel="stylesheet";l.href={json.dumps(h)};document.head.appendChild(l);'
+    for h in re.findall(r'<link rel="stylesheet" href="([^"]+)"', src))
+(docs / "embed.js").write_text(f"""// Built by build.py from index.html. Loaded by the snippet in wordpress/embed.html.
 (function(){{
   var host = document.getElementById("cm-logbook");
+  if (!host || host.shadowRoot) return;
+  {fonts_js}
   var root = host.attachShadow({{mode: "open"}});
-  root.appendChild(document.getElementById("cm-logbook-tpl").content.cloneNode(true));
+  root.innerHTML = {json.dumps("<style>" + light + "</style>" + body)};
   {shadow_js}
 }})();
-</script>
+""")
+wp = HERE / "wordpress"
+wp.mkdir(exist_ok=True)
+tpl = f"""<div id="cm-logbook"></div>
+<script src="{PAGES}embed.js" defer></script>
 """
 (wp / "embed.html").write_text(tpl)
-print(f"docs/index.html {len((docs / 'index.html').read_text()):,} bytes; wordpress/embed.html {len(tpl):,} bytes")
+print(f"docs/index.html {len((docs / 'index.html').read_text()):,} bytes; docs/embed.js {len((docs / 'embed.js').read_text()):,} bytes")
