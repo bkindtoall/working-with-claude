@@ -1,0 +1,400 @@
+<title>Patricia's Automation Logbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a logbook. Intro and figures up top, then the work as dated entries on a rail, read by area or as one timeline. */
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --ink:#16202A; --muted:#566373; --line:#D8DEE5;
+  --accent:#1D5B82; --accent-soft:#E2EEF6;
+  --k-started:#2C7A4B; --k-improved:#1D5B82; --k-fixed:#A85A12; --k-replaced:#6A4C9C; --k-retired:#6F7782;
+  --k-started-bg:#E3F2E8; --k-improved-bg:#E2EEF6; --k-fixed-bg:#FBEBDB; --k-replaced-bg:#EEE8F7; --k-retired-bg:#ECEEF0;
+  --f-display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F151B; --surface:#17202A; --ink:#E4EAF0; --muted:#9AA6B3; --line:#2A3542;
+  --accent:#7DB5DB; --accent-soft:#1B2E3D;
+  --k-started:#7CCB97; --k-improved:#7DB5DB; --k-fixed:#E8A766; --k-replaced:#B9A0E3; --k-retired:#A3ABB5;
+  --k-started-bg:#18301F; --k-improved-bg:#1B2E3D; --k-fixed-bg:#36261A; --k-replaced-bg:#2A2340; --k-retired-bg:#242B33;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0F151B; --surface:#17202A; --ink:#E4EAF0; --muted:#9AA6B3; --line:#2A3542;
+  --accent:#7DB5DB; --accent-soft:#1B2E3D;
+  --k-started:#7CCB97; --k-improved:#7DB5DB; --k-fixed:#E8A766; --k-replaced:#B9A0E3; --k-retired:#A3ABB5;
+  --k-started-bg:#18301F; --k-improved-bg:#1B2E3D; --k-fixed-bg:#36261A; --k-replaced-bg:#2A2340; --k-retired-bg:#242B33;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1rem;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:48px 72px;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(2.1rem,5vw,3.3rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.6rem;font-weight:700}
+h3{font-size:1.08rem;font-weight:700}
+p{margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* intro */
+.intro{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px;align-items:start}
+.intro-text{display:flex;flex-direction:column;gap:18px;max-width:62ch}
+.intro-text .lede{font-size:1.15rem}
+.figures{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fig{background:var(--surface);padding:16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fig b{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.fig span{font-size:.85rem;color:var(--muted);line-height:1.4}
+
+/* principles */
+.principles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px 32px}
+.principle{display:flex;flex-direction:column;gap:6px;border-top:2px solid var(--ink);padding-top:12px}
+.principle p{color:var(--muted);font-size:.95rem}
+.section-head{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;max-width:65ch}
+.section-head p{color:var(--muted)}
+
+/* controls */
+.controls{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:12px;z-index:2;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;font-size:.9rem;border:0;background:transparent;color:var(--ink);padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 11px;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);font-weight:600}
+
+/* areas */
+.areas{display:flex;flex-direction:column;gap:48px;margin-top:28px}
+.area{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:32px}
+.area-head{display:flex;flex-direction:column;gap:10px;align-self:start;position:sticky;top:80px}
+.area-head p{color:var(--muted);font-size:.93rem}
+.runs{font-family:var(--f-mono);font-size:.76rem;color:var(--ink);background:var(--accent-soft);border-radius:6px;padding:8px 10px;line-height:1.55}
+.rail{list-style:none;margin:0;padding:0 0 0 22px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:22px}
+.entry{position:relative;display:flex;flex-direction:column;gap:6px}
+.entry::before{content:"";position:absolute;left:-29px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid var(--kc)}
+.entry-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.date{font-family:var(--f-mono);font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;color:var(--kc);background:var(--kbg);border-radius:4px;padding:2px 7px}
+.area-tag{font-size:.8rem;color:var(--muted)}
+.entry p{color:var(--ink);max-width:68ch}
+.metric{font-family:var(--f-mono);font-size:.8rem;color:var(--muted)}
+.k-started{--kc:var(--k-started);--kbg:var(--k-started-bg)}
+.k-improved{--kc:var(--k-improved);--kbg:var(--k-improved-bg)}
+.k-fixed{--kc:var(--k-fixed);--kbg:var(--k-fixed-bg)}
+.k-replaced{--kc:var(--k-replaced);--kbg:var(--k-replaced-bg)}
+.k-retired{--kc:var(--k-retired);--kbg:var(--k-retired-bg)}
+
+/* timeline */
+.timeline{display:flex;flex-direction:column;gap:36px;margin-top:28px}
+.month{display:grid;grid-template-columns:minmax(0,140px) minmax(0,1fr);gap:24px}
+.month h3{font-size:1.25rem}
+.month h3 small{display:block;font-family:var(--f-mono);font-size:.74rem;font-weight:400;color:var(--muted);margin-top:4px}
+
+/* retired table */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:.92rem}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* map */
+.map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch}
+.map-col{display:flex;flex-direction:column;gap:10px}
+.map-col h3{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.node{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.node small{display:block;color:var(--muted);font-size:.8rem}
+.map-col.mid .node{border-color:var(--accent)}
+
+/* ops duties, inventory, guide */
+.duties{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.duty{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:24px;padding-block:18px;border-bottom:1px solid var(--line)}
+.duty h3{color:var(--accent)}
+.duty p{max-width:68ch}
+table.inv{min-width:900px}
+table.inv td small{display:block;font-family:var(--f-mono);font-size:.74rem;color:var(--muted);margin-top:2px;font-weight:400}
+table.inv td:first-child{font-weight:700}
+.state{font-family:var(--f-mono);font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600;border-radius:4px;padding:2px 7px;white-space:nowrap}
+.s-on{color:var(--k-started);background:var(--k-started-bg)}
+.s-wait{color:var(--k-fixed);background:var(--k-fixed-bg);white-space:normal}
+.s-off{color:var(--k-retired);background:var(--k-retired-bg)}
+.guide{margin-top:20px;background:var(--accent-soft);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:8px;max-width:760px}
+.guide ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+footer{border-top:1px solid var(--line);padding-top:20px;color:var(--muted);font-size:.9rem;display:flex;flex-direction:column;gap:6px;max-width:70ch}
+
+@media (max-width:820px){
+  .intro,.area,.month,.duty{grid-template-columns:minmax(0,1fr)}
+  .area-head{position:static}
+  .principles,.map{grid-template-columns:minmax(0,1fr)}
+  .wrap{gap:44px;padding-block:32px 56px}
+}
+@media (prefers-reduced-motion:no-preference){.entry{animation:rise .35s ease both}}
+@keyframes rise{from{transform:translateY(4px)}to{transform:none}}
+</style>
+
+<div class="wrap">
+
+<header class="intro">
+  <div class="intro-text">
+    <span class="eyebrow">Patricia Filipovic · March to October 2026</span>
+    <h1>What I've built and kept running with Claude</h1>
+    <p class="lede">Since March 2026 I've been building personal systems with Claude that run my job search, my mornings and my email. I've become quite comfortable working with AI and maintaining the agents and automations I build, mostly with Claude (Chat, Code, and Cowork) and ChatGPT (Chat and Codex), including connecting them through APIs to other software like Notion.</p>
+    <p>Claude Code wrote the code at my direction. My part has been deciding what each system should do and catching it when it went wrong. The part I enjoy most is keeping it all in order, knowing what each tool is for and whether it's still worth what it costs.</p>
+    <p>This page is the record of that work, including the routines that were improved, replaced or retired along the way.</p>
+  </div>
+  <div class="figures" aria-label="Figures from the work">
+    <div class="fig"><b>14</b><span>scheduled jobs tracked in one registry with a weekly health check</span></div>
+    <div class="fig"><b>3,387</b><span>notes in Open Brain, my personal knowledge base</span></div>
+    <div class="fig"><b>460K → 7K</b><span>tokens per morning brief after the rebuild</span></div>
+    <div class="fig"><b>~$151 → ~$50</b><span>monthly cost of AI job scoring, same model</span></div>
+  </div>
+</header>
+
+<section aria-labelledby="ops">
+  <div class="section-head">
+    <span class="eyebrow">AI tool operations</span>
+    <h2 id="ops">The upkeep side of AI, which is the work I like best</h2>
+    <p>These are personal systems with one user, so the scale is small. The upkeep they need is the same kind a team's AI tools need, and I've been doing it every week since July.</p>
+  </div>
+  <div class="duties">
+    <div class="duty"><h3>Inventory</h3><div><p>One registry lists every automation with its purpose, schedule, model, logs and whether it should be running. A weekly check compares the list with what's actually scheduled, and anything running that isn't listed gets flagged. That check found a job that had failed for 9 straight weeks. Each job names its own model, so nothing quietly runs on a stale default.</p></div></div>
+    <div class="duty"><h3>Use cases and needs</h3><div><p>Every new automation starts with the need it serves and a comparison of a plain script against each model size on cost and value. When I reviewed 12 niche job boards, two met the need and were adopted, and the other ten are on record with the reason each was skipped. Retired tools keep a note on why they went, so nobody rebuilds them by accident.</p></div></div>
+    <div class="duty"><h3>Adoption and usage</h3><div><p>Every AI job logs its tokens on each run, and the weekly check reports usage by job. Usage numbers showed a nightly sync spending 690,000 tokens to save about one note. An adoption audit showed my writing corrections almost never reached the knowledge base, so I moved the capture to the moment I make them.</p></div></div>
+    <div class="duty"><h3>Access</h3><div><p>Each job gets the least access it needs. The brief and the alerts read Gmail through a read-only token, and only the cleanup job holds write access, on its own token. Keys live in the macOS Keychain. I trimmed two permission lists that had grown to 242 and 24 one-off approvals, so each unattended task now has one exact permission.</p></div></div>
+    <div class="duty"><h3>Clean data</h3><div><p>Status names live in one file every script reads. Stable IDs stopped duplicate listings, 25 missing application dates were backfilled and marked as estimates, and my labels are saved before any row is archived. Outdated notes get marked superseded so search stops surfacing them, and the nightly backup refuses to overwrite itself with a smaller copy.</p></div></div>
+  </div>
+</section>
+
+<section aria-labelledby="how">
+  <div class="section-head">
+    <span class="eyebrow">How I work</span>
+    <h2 id="how">Habits that came out of the work</h2>
+    <p>Each of these started as a specific problem. They're now the rules every new automation has to follow.</p>
+  </div>
+  <div class="principles">
+    <div class="principle"><h3>Scripts first</h3><p>Plain scripts handle fetching, sorting and date math. AI only gets the parts that need judgment, and the smallest model that does the job well.</p></div>
+    <div class="principle"><h3>Measure every run</h3><p>Every job that uses AI records its tokens on each run. Before I build anything new, I compare a plain script with each model size on cost and value.</p></div>
+    <div class="principle"><h3>Nothing disappears quietly</h3><p>Filtered jobs go to a log, my labels are saved before anything is archived, and the health check reads every error log.</p></div>
+    <div class="principle"><h3>The record says what I said</h3><p>My career record holds only facts I've confirmed in my own words. Anything Claude inferred waits for me.</p></div>
+    <div class="principle"><h3>Settled stays settled</h3><p>Once I decide something, it's recorded as final. New evidence gets raised once as a question, and nothing changes until I answer.</p></div>
+    <div class="principle"><h3>Private stays local</h3><p>My records are versioned in local git with no remote. Alert texts carry a category and a count, never who sent the email.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="work">
+  <div class="section-head">
+    <span class="eyebrow">The logbook</span>
+    <h2 id="work">How each system started and changed</h2>
+    <p>Read it by area to follow one system from its first version to now, or as a timeline to see how the pieces grew together. The Fixed filter shows the problems I worked through.</p>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" id="v-area" aria-pressed="true">By area</button>
+      <button type="button" id="v-time" aria-pressed="false">Timeline</button>
+    </div>
+    <div class="chips" role="group" aria-label="Filter by kind" id="chips"></div>
+  </div>
+  <div id="view"></div>
+</section>
+
+<section aria-labelledby="inventory">
+  <div class="section-head">
+    <span class="eyebrow">Inventory</span>
+    <h2 id="inventory">Every AI tool and automation I run</h2>
+    <p>This is my registry as of October 2026, in plain language. Usage figures come from the per-run token logs.</p>
+  </div>
+  <div class="tablewrap">
+    <table class="inv">
+      <thead><tr><th>Tool</th><th>Use case</th><th>AI used</th><th>Access it holds</th><th>Usage</th><th>State</th></tr></thead>
+      <tbody>
+        <tr><td>Job scraper and scoring<small>Daily 6:00am</small></td><td>Find new roles and score them against my profile</td><td>Opus 5, batch</td><td>Public job boards, Notion Job Listings, API key in Keychain</td><td class="num">~$1.41–2.25/run</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Daily job cleanup<small>Daily 8:45am</small></td><td>Learn from my rejections, save labels, archive dead rows</td><td>None</td><td>Notion Job Listings</td><td class="num">0 tokens</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Target employer sweep<small>Sundays 7:00pm</small></td><td>Check employers on my list for new roles</td><td>Opus 5, batch</td><td>Public career feeds, Notion</td><td class="num">≤25 jobs, ~2¢ each</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Morning brief<small>Daily 7:00am</small></td><td>One page with my day, email that needs me and application status</td><td>Haiku 4.5, one call</td><td>Gmail read-only, Calendar, Notion homepage and to-dos, Open Brain</td><td class="num">~7K tokens/run</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Email alerts<small>Every 15 min, 7am–9pm</small></td><td>Text me when an employer or a bill needs me</td><td>None</td><td>Gmail read-only (shared, never rewritten), Messages</td><td class="num">0 tokens</td><td><span class="state s-wait">Awaiting first supervised run</span></td></tr>
+        <tr><td>Gmail cleanup<small>Mondays 3:00am</small></td><td>Clear promotions and old mail</td><td>None</td><td>Gmail with write access, on its own token</td><td class="num">0 tokens</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Weekly review<small>Sundays 11:30am</small></td><td>Fold my corrections into the verified career record</td><td>Sonnet</td><td>Open Brain, Notion review page, local records</td><td class="num">~350–450K tokens/run</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Review apply step<small>Daily 8:00pm</small></td><td>Apply the changes I approved</td><td>None</td><td>Notion review page, local records</td><td class="num">0 tokens</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Weekly code review<small>Sundays 10:30am</small></td><td>Find bugs in one changed automation a week</td><td>Sonnet 5.5, high effort</td><td>Local code, read only</td><td class="num">~25K tokens/unit</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Health check<small>Sundays 10:00am</small></td><td>Compare the registry with what's running, read error logs, report usage</td><td>Claude task, one script</td><td>One exact permission, Notion health log</td><td class="num">logged weekly</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Nightly backup<small>Daily 11:15pm</small></td><td>Export Open Brain and commit every record store</td><td>None</td><td>Open Brain read, local git with no remote</td><td class="num">0 tokens</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Bills reset<small>1st of the month</small></td><td>Untick last month's Paid boxes</td><td>None</td><td>One Notion page</td><td class="num">0 tokens</td><td><span class="state s-on">Active</span></td></tr>
+        <tr><td>Notion to Open Brain sync<small>Daily 11:10pm</small></td><td>Save notes from my homepage</td><td>Sonnet, only on change</td><td>Notion homepage, Open Brain, Calendar</td><td class="num">0 most nights</td><td><span class="state s-off">Paused</span></td></tr>
+        <tr><td>Interactive tools<small>On demand</small></td><td>Writing, building and reviewing</td><td>Claude Chat, Code and Cowork; ChatGPT Chat and Codex; Claude and ChatGPT review each other's drafts by copy and paste</td><td>Connectors to Open Brain, Notion, Gmail and Calendar</td><td class="num">best current model</td><td><span class="state s-on">In use</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="guide">
+    <h3>Starting an inventory of your own</h3>
+    <ol>
+      <li>List every tool and scheduled job in one place, with its purpose and whether it should be running.</li>
+      <li>Write down what each one can access, and cut it to the least it needs.</li>
+      <li>Log usage on every run, so cost and adoption show up as numbers.</li>
+      <li>Compare the list with what's actually running each week. Anything unlisted is a finding.</li>
+      <li>When something is retired, record why, so it doesn't get rebuilt by accident.</li>
+    </ol>
+  </div>
+</section>
+
+<section aria-labelledby="retired">
+  <div class="section-head">
+    <span class="eyebrow">Replaced and retired</span>
+    <h2 id="retired">What I turned off, and why</h2>
+    <p>Most of my first routines were Claude tasks that did everything inside the model. Rebuilding them as scripts with one small AI call is where most of the savings came from.</p>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Original</th><th>Ran</th><th>Why it went</th><th>Replaced by</th><th>Cost before → after</th></tr></thead>
+      <tbody>
+        <tr><td>Four daily email digests</td><td class="num">Mar–May</td><td>Hit my usage limit; every slot was scheduled twice; Notion writes timed out</td><td>Rules inside the morning brief, plus text alerts</td><td class="num">3–5M/day → 0 extra</td></tr>
+        <tr><td>Morning Window recap</td><td class="num">Mar–Jun</td><td>Lost when projects moved folders; mostly empty sections</td><td>Morning brief (script + one Haiku call)</td><td class="num">460K → 7K/run</td></tr>
+        <tr><td>Daily GRC job digest</td><td class="num">Apr–May</td><td>Web search was expensive and inconsistent</td><td>Job board scraper, later two niche boards</td><td class="num">1.7M/run → scraper</td></tr>
+        <tr><td>Monthly bills reset task</td><td class="num">Jun</td><td>Unticking checkboxes needs no AI</td><td>Plain script with a once-a-month guard</td><td class="num">~1M/run → 0</td></tr>
+        <tr><td>Nightly Notion sync task</td><td class="num">Apr–May</td><td>Spent heavily to save about one note a night</td><td>Script with a free change check (paused)</td><td class="num">690K/run → 0 most nights</td></tr>
+        <tr><td>Side-by-side scoring test</td><td class="num">Sep 5–10</td><td>Proved batch and live scoring agree on 236 of 237 jobs</td><td>Switched off once proven</td><td class="num">~$25/month → 0</td></tr>
+        <tr><td>Two separate job archivers</td><td class="num">Jul–Oct</td><td>One archived a row before my label was saved</td><td>One daily cleanup pass</td><td class="num">no AI either way</td></tr>
+        <tr><td>Duplicate Gmail cleanup job</td><td class="num">9 Mondays</td><td>Pointed at a folder, so it never ran once</td><td>Removed; drift check rewritten</td><td class="num">n/a</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="map">
+  <div class="section-head">
+    <span class="eyebrow">How it fits together</span>
+    <h2 id="map">Where things come from and where I see them</h2>
+  </div>
+  <div class="map">
+    <div class="map-col"><h3>Sources</h3>
+      <div class="node">Job boards and employer career sites<small>10 boards, plus fair and target employer lists</small></div>
+      <div class="node">Gmail and Google Calendar<small>read-only access for the brief</small></div>
+      <div class="node">My chats with Claude<small>corrections captured as notes as I go</small></div>
+    </div>
+    <div class="map-col mid"><h3>Systems</h3>
+      <div class="node">Job pipeline<small>filter, AI score, post, clean up daily</small></div>
+      <div class="node">Morning brief<small>one script, one small AI call</small></div>
+      <div class="node">Open Brain and weekly review<small>knowledge base and verified career record</small></div>
+      <div class="node">Registry, health check and code review<small>watching all of the above</small></div>
+    </div>
+    <div class="map-col"><h3>Where I see it</h3>
+      <div class="node">Notion Job Listings<small>scored roles, my statuses and reasons</small></div>
+      <div class="node">Notion homepage<small>Today and Yesterday, refreshed at 7am</small></div>
+      <div class="node">Weekly Review page<small>changes for me to approve or reject</small></div>
+      <div class="node">A text message<small>only when an employer or bill needs me</small></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>These are personal systems with one user. The code and data stay private because they hold my career and household records, so this page describes the work instead of linking to it.</p>
+  <p>Portfolio: <a href="https://craftingmetrics.com" target="_blank" rel="noopener">craftingmetrics.com</a></p>
+</footer>
+</div>
+
+<script>
+const AREAS = {
+  memory:  {name:"Memory and home base", blurb:"A knowledge base every AI tool I use can read and write, and a Notion homepage where I track my day.", runs:"Open Brain · 3,387 notes<br>Notion homepage"},
+  brief:   {name:"Morning brief", blurb:"One page each morning with my calendar, commitments, email that needs me and where my applications stand.", runs:"Daily 7:00am<br>~7,000 tokens a run"},
+  email:   {name:"Email", blurb:"Sorting, cleanup and alerts, moved from four AI digests a day to rules.", runs:"Sorted inside the 7am brief<br>Gmail cleanup Mon 3:00am"},
+  jobs:    {name:"Job search pipeline", blurb:"Finds roles, scores them against my profile, posts them to Notion and learns from what I reject.", runs:"Scrape daily 6:00am<br>Cleanup daily 8:45am<br>Target sweep Sun 7:00pm"},
+  writing: {name:"Writing in my voice", blurb:"Keeps résumés and cover letters truthful and sounding like me across many separate chats.", runs:"Weekly review Sun 11:30am<br>Claude and ChatGPT drafting by hand"},
+  ops:     {name:"Keeping it all running", blurb:"Knowing every job is healthy, affordable and backed up.", runs:"Health check Sun 10:00am<br>Code review Sun 10:30am<br>Backup nightly 11:15pm"},
+  home:    {name:"Household and side projects", blurb:"Smaller tools, mostly rebuilt to use no AI at all.", runs:"Bills reset 1st, 6:00am<br>Tabscape in Chrome"}
+};
+const KINDS = {started:"Started", improved:"Improved", fixed:"Fixed", replaced:"Replaced", retired:"Retired"};
+
+const E = [
+ ["2026-03-22","memory","started","Open Brain, my personal knowledge base",`I set up a personal knowledge system from a published build guide, using Supabase, vector search and MCP so any AI tool I use can read from it and write to it. Then I imported 2,091 of my ChatGPT conversations going back to 2023, so my history came with me.`],
+ ["2026-03-23","brief","started","Morning Window recap",`My first scheduled Claude routine. Every morning at 8 it wrote a summary of yesterday into Notion with my calendar, my top tasks and what moved on each project.`],
+ ["2026-03-27","memory","started","Notion Command Center",`I set up Notion as the place I track my day. Claude and I worked out archiving rules so the page only shows what's current, and I redesigned it into a planner layout a week later.`],
+ ["2026-03-30","email","started","Four email digests a day",`Claude checked Gmail at 8, 11, 1 and 4, sorted the mail with a living set of rules we wrote together and posted a digest to Notion.`],
+ ["2026-04-20","memory","improved","Open Brain connected everywhere",`I deployed Open Brain's connector as a Supabase Edge Function so every Claude session could use it. That's when I settled the split I still use. Notion is where I track things, and Open Brain is where knowledge lives. Later I tightened its security by moving the access key out of the connection URL and into a request header.`],
+ ["2026-04-20","home","started","Nightly Notion to Open Brain sync",`A scheduled task that read my Notion homepage at 11 every night and saved anything worth remembering into Open Brain.`],
+ ["2026-04-23","jobs","started","Daily GRC job digest",`A Claude routine that searched the web every morning for governance, risk and compliance roles.`,"~1.7M tokens a run"],
+ ["2026-05-05","email","retired","The email digests stop",`They hit my usage limit, and the digests had grown my Notion page to about 50KB, so writes timed out. When I traced it in September I found every time slot had been scheduled twice.`,"~3–5M tokens a day"],
+ ["2026-05-28","email","started","Weekly Gmail cleanup",`A plain Python script that clears Promotions and old job board mail every Monday at 3am and archives anything in the inbox older than 90 days.`],
+ ["2026-06-02","jobs","started","Job board scraper",`A Python scraper that checks the job boards every morning at 8 and posts new listings to a Notion database. It took over from the web search digest.`],
+ ["2026-06-08","home","started","Monthly bills reset",`A Claude task that unticked the Paid boxes on my bills page at the start of each month.`],
+ ["2026-06-10","ops","fixed","Jobs failing with “Operation not permitted”",`My scheduled jobs ran fine by hand and failed on schedule. macOS privacy protection blocks background jobs from reading the Documents folder, so we moved every project out and rebuilt the environments. A few older Claude routines stopped in the move, and I didn't find that out until September, which is part of why the health check exists.`],
+ ["2026-07-15","ops","started","Automations registry and health check",`A Gmail cron job had been failing silently every Monday for weeks because it called the wrong copy of Python. I asked for one list of every job I run and a checker that compares it with what's actually scheduled and reads each error log.`],
+ ["2026-07-15","jobs","improved","A New checkbox for fast triage",`Too many listings were obviously wrong at a glance, and adding filters wasn't keeping up. I added a checkbox I can untick in a second, kept separate from the real application status. Anything I never looked at is archived after 7 days.`],
+ ["2026-07-26","jobs","improved","AI scoring against my own profile",`Claude now reads each posting and scores it against a written profile built from my Open Brain notes. I went through that profile and corrected it before it went live. The same day we fixed listings that were duplicating across runs.`],
+ ["2026-08-02","writing","started","/consensus drafting loop",`I built a loop where Claude drafts a cover letter or résumé and ChatGPT critiques it through the API. It worked, though every API call starts fresh, so I lost the persona ChatGPT and I have built up over time. Since then I copy drafts between the two by hand, because together they find my voice better than either does alone. Rejected suggestions are still logged with their reasons, and a story library holds the strongest claim each part of my career can honestly support. Next up is a shared MCP connection so the two can talk to each other directly.`],
+ ["2026-08-20","jobs","improved","My own staging buckets",`I started naming statuses after tiers and groups for jobs I plan to apply to. The scripts recognize them by name, so I can add new ones on the fly. Jobs I've applied to are never archived automatically, because they're the examples the scoring is checked against.`],
+ ["2026-09-02","jobs","started","Career fair employer sweep",`Before the JBLM veteran hiring fair I wanted to know which booths had something for me. We swept the fair's employer list across government job sites and company career pages, and I walked in with a page per employer. Guessed company names on job platforms matched the wrong companies surprisingly often, so every match is checked against the platform's own company name.`],
+ ["2026-09-04","jobs","improved","Scoring bill cut by about two-thirds",`I noticed $22 auto-reload invoices arriving every 3 to 5 days, about $151 a month against my $44 budget. We added a free prefilter and moved scoring to batch processing with prompt caching. I ran both methods side by side for a week and they agreed on 236 of 237 jobs. I kept the strongest model, since a wrongly rejected job is invisible to me and a wrongly accepted one costs me 30 seconds of reading.`,"$1.41 a run in the first week"],
+ ["2026-09-10","jobs","fixed","A filter that dropped a job I'd applied to",`I was still seeing Senior and Intern titles. The first version of the new filter would have dropped a posting I had applied to, so we tested every change against all my applications until it dropped none of the 34. Every filtered job still goes to a log, because I don't want roles disappearing without a trace.`],
+ ["2026-09-14","ops","started","A rule for every AI job",`Every job that uses AI has to justify how often it runs and which model it uses, and it has to record its token use on every run. The weekly health check reports usage by job and flags anything that jumps.`],
+ ["2026-09-14","ops","fixed","Health check said “succeeded” while stuck",`Three weekly runs showed success while each one sat waiting on a permission prompt. The task now runs a single script with one exact permission, and every unattended task I set up follows that pattern.`],
+ ["2026-09-14","ops","improved","Permission lists trimmed",`Two permission lists for Claude had grown to 242 and 24 rules through one-off approvals. I archived both and trimmed them, so each unattended task now has one exact permission for the one script it runs.`],
+ ["2026-09-14","ops","improved","A model named for every job",`A global default model had quietly gone stale. Each automation now names its own model, and I removed the global setting so interactive work always uses the best current model.`],
+ ["2026-09-14","writing","fixed","Audit of what reached the knowledge base",`Career facts were reaching Open Brain well, yet only 1 of 40 notes captured how I want things worded. /consensus had run once, and its save step called a tool name that didn't exist. Since I do most writing in the Chat tab, which scripts can't read, corrections are now saved at the moment I make them.`],
+ ["2026-09-15","jobs","fixed","Backfilled missing application dates",`25 of my Applied rows had no application date, which broke check-in timing. We filled them with estimates marked as estimates, and new Applied rows now get a date automatically.`],
+ ["2026-09-17","email","improved","Least access for each job",`The brief and the alerts share a read-only Gmail token that neither one rewrites, so they can't collide. The cleanup job deletes mail, so it keeps write access on a separate token of its own.`],
+ ["2026-09-14","home","replaced","Bills reset becomes a plain script",`Unticking a dozen checkboxes was using about a million tokens a run. It's now a small script with no AI that refuses to run twice in the same month.`,"~1M tokens → 0"],
+ ["2026-09-14","jobs","replaced","Niche boards join the main pipeline",`I reviewed the old digest's 12 niche boards. Two had proper public feeds, so we added them to the scraper with the same filters as everything else. The other ten are recorded with the reason each was skipped, including one we chose not to get past bot protection on.`],
+ ["2026-09-14","writing","started","Weekly review of my corrections",`Facts I had settled in one résumé chat kept getting re-asked in the next. My MS Access experience was the example that tipped it. A weekly job now gathers my corrections, folds them into one verified record and posts anything that needs my approval to a Notion page I tick through.`],
+ ["2026-09-15","brief","replaced","Morning brief rebuilt",`A script gathers my calendar, email, commitments and job check-ins, and one small Haiku call writes the summary. It also tracks commitments, so when I agree to something in a Claude chat it shows up as a to-do the next morning.`,"~460K → ~7K tokens a run"],
+ ["2026-09-15","jobs","improved","Teaching the scorer from my no's",`The scorer had only ever learned from jobs I applied to. Now I mark a poor match “Does Not Meet” and write one line about why, and those reasons are saved before any row is archived.`],
+ ["2026-09-17","email","replaced","Email sorted by rules inside the brief",`Sorting rules live in a config file, and the morning brief renders the email section with no extra AI call. A separate alert texts me when an employer needs an answer or a bill has a problem. Each text carries only a category and a count.`],
+ ["2026-09-17","email","fixed","Cleanup was deleting interview invites",`While rebuilding the email brief I found the Gmail cleanup trashing mail from Greenhouse, Lever, Workday and other applicant tracking systems after 7 days. Those are the systems that send interview invitations. They now archive after 30 days instead.`],
+ ["2026-09-17","ops","fixed","A duplicate job that never once worked",`An old copy of the Gmail cleanup had failed every Monday for 9 weeks. The health check missed it because of how the job was named, so the drift check now inspects every scheduled job on the machine whatever its name.`],
+ ["2026-09-17","home","replaced","Notion sync with a free change check",`The nightly sync was using about 690,000 tokens a run to save roughly one note. The rebuild checks for changes first at no cost and sends Claude only what changed. It's paused while I decide whether I still need it.`],
+ ["2026-09-20","writing","fixed","The record only says what I said",`Reviewing my career record, I found entries marked verified that were really Claude's inferences from a single application, and two of them were wrong. Records now carry only my own words, and anything else waits for me to confirm it.`],
+ ["2026-09-21","writing","improved","Settled decisions stay settled",`A résumé detail flipped back and forth four times between sessions. Now a decision I make, or one I hand to Claude, is recorded as settled. If new evidence turns up, Claude asks me once and changes nothing until I answer.`],
+ ["2026-09-23","brief","improved","One place to track applications",`Notion is the single record. The brief notes when an employer confirmed my application and when I last heard from them, and prompts a check-in at 14 days, or 28 for public sector roles, which move more slowly.`],
+ ["2026-09-24","writing","fixed","Newer corrections win",`The verified record rebuilds weekly, so a correction I made on Tuesday could lose to Monday's version. Every session now checks for newer corrections before trusting the weekly record.`],
+ ["2026-09-27","ops","started","Version history and nightly backups",`Automations were editing my records with no history. Each store is now a local git repository, and a nightly job exports Open Brain and commits whatever changed. The export refuses to overwrite the backup if it comes back empty or much smaller.`],
+ ["2026-09-30","home","started","Tabscape",`A Chrome extension that turns my new tab page into boxes of related open tabs. It's plain JavaScript with no AI and no server, and my data stays in the browser. Its tests include one that fails if the extension's permissions drift from the approved list.`],
+ ["2026-10-02","ops","started","Weekly AI code review",`I wanted the weekly review to catch bugs too, so I designed a rotation where Sonnet reviews one automation a week, moving to the next one whose code changed. The first full pass found 60 issues and we fixed 10 that day. At medium effort it missed a bug I already knew about, and at high effort it ranked that bug first, so it runs at high.`],
+ ["2026-10-02","brief","improved","Checkboxes in the brief",`Emails waiting on me and open questions are now tickable. A ticked email stays hidden until a new message arrives on it, and a ticked question isn't asked again.`],
+ ["2026-10-05","jobs","replaced","One cleanup pass a day",`A rejection I'd labelled was archived the day after I marked it, before my reason was saved, because two archivers ran on different rules. One daily pass now learns title exclusions from roles I mark Not Related, saves my labels, gives dead rows three days and logs every archived row for later analysis.`],
+ ["2026-10-05","brief","improved","Email updates my application status",`The brief reads new mail from employers I've applied to and updates the status in Notion. The first test run found 7 real rejections and no false ones.`],
+ ["2026-10-05","jobs","started","Target employer sweep",`A weekly sweep of employers I keep on a list in Notion, read from their public job feeds and scored the same way as everything else.`]
+];
+
+E.sort((x,y)=>x[0].localeCompare(y[0]));
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const fmt=d=>{const [y,m,dd]=d.split("-");return `${MONTHS[+m-1].slice(0,3)} ${+dd}`;};
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+let view="area", kind="all";
+try{const s=JSON.parse(localStorage.getItem("logbook")||"{}");if(s.view)view=s.view;if(s.kind)kind=s.kind;}catch(e){}
+
+function entryHTML(e,showArea){
+  const [d,a,k,t,txt,m]=e;
+  return `<li class="entry k-${k}"><div class="entry-meta"><span class="date">${fmt(d)}</span><span class="pill">${KINDS[k]}</span>${showArea?`<span class="area-tag">${AREAS[a].name}</span>`:""}</div><h3>${esc(t)}</h3><p>${esc(txt)}</p>${m?`<span class="metric">${esc(m)}</span>`:""}</li>`;
+}
+function render(){
+  const list=E.filter(e=>kind==="all"||e[2]===kind||(kind==="replaced"&&e[2]==="retired"));
+  let h="";
+  if(view==="area"){
+    h='<div class="areas">';
+    for(const [id,a] of Object.entries(AREAS)){
+      const items=list.filter(e=>e[1]===id); if(!items.length) continue;
+      h+=`<article class="area"><div class="area-head"><h2>${a.name}</h2><p>${a.blurb}</p><div class="runs">${a.runs}</div></div><ol class="rail">${items.map(e=>entryHTML(e,false)).join("")}</ol></article>`;
+    }
+    h+="</div>";
+  }else{
+    h='<div class="timeline">'; const by={};
+    list.forEach(e=>{(by[e[0].slice(0,7)]??=[]).push(e)});
+    for(const ym of Object.keys(by).sort()){
+      const [y,m]=ym.split("-");
+      h+=`<article class="month"><h3>${MONTHS[+m-1]}<small>${y} · ${by[ym].length} ${by[ym].length===1?"entry":"entries"}</small></h3><ol class="rail">${by[ym].map(e=>entryHTML(e,true)).join("")}</ol></article>`;
+    }
+    h+="</div>";
+  }
+  document.getElementById("view").innerHTML=h;
+  document.getElementById("v-area").setAttribute("aria-pressed",view==="area");
+  document.getElementById("v-time").setAttribute("aria-pressed",view==="time");
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.k===kind));
+  try{localStorage.setItem("logbook",JSON.stringify({view,kind}))}catch(e){}
+}
+const chipDefs=[["all","All"],["started","Started"],["improved","Improved"],["fixed","Fixed"],["replaced","Replaced or retired"]];
+document.getElementById("chips").innerHTML=chipDefs.map(([k,l])=>`<button type="button" class="chip" id="chip-${k}" data-k="${k}">${l}</button>`).join("");
+document.getElementById("chips").addEventListener("click",ev=>{const b=ev.target.closest(".chip");if(b){kind=b.dataset.k;render();}});
+document.getElementById("v-area").onclick=()=>{view="area";render();};
+document.getElementById("v-time").onclick=()=>{view="time";render();};
+render();
+</script>
